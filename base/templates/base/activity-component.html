@@ -1,0 +1,15 @@
+<section class='activity-feed'>
+    <h3>Recent activity</h3>
+    <div>
+      
+      {% for activity in recentActivity %}
+
+      {% if request.user == activity.user %}
+      {% endif %}
+      <p>@{{activity.user}} - {{activity.created|timesince}}</p>
+      <small>Replied to - <a href="{% url "room" activity.room.id %}">{{activity.room}}</a></small>
+      <a href="{% url "delete-message" activity.id %}">Delete</a>
+      <p>{{activity}}</p>
+      <hr>
+      {% endfor %}
+    </div>

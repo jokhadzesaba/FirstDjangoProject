@@ -1,6 +1,6 @@
 
 from django.shortcuts import render, redirect
-from .models import Room,Topic
+from .models import Room,Topic,Message
 from .forms import RoomForm
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -8,17 +8,17 @@ from django.contrib import messages
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.contrib.auth.forms import UserCreationForm
 
 
 def loginPage(request):
-    
+    page = 'login'
     if request.user.is_authenticated:
         return redirect('home')
     
     if request.method == 'POST':
-       username = request.POST.get('username')
+       username = str(request.POST.get('username')).lower()
        password = request.POST.get('password')
-       print(username)
        try:
            user = User.objects.get(username=username)
            
@@ -31,15 +31,29 @@ def loginPage(request):
        else:
            messages.error(request,'userName or Password does not exists')
            
-           
-        
-    context = {}
+    context = {'page':page}
     return render(request,'base/login_registrate.html',context)
                 
         
+        
+def registerPage(request):
+    form = UserCreationForm()
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = str(user.username).lower()
+            user.save()
+            login(request,user)
+            return redirect('home')
+        else:
+            messages.error(request, 'Something Went Wrong!')
+    return render(request,'base/login_registrate.html',{'form':form})
+    
 def logOutUser(request):
     logout(request)
     return redirect('home')           
+
 
 
 def home(request):    
@@ -47,12 +61,25 @@ def home(request):
     rooms= Room.objects.filter(Q(topic__name__icontains = q) | Q(name__icontains=q) | Q(description__icontains=q))
     topics = Topic.objects.all()
     count = rooms.count()
-    context = {'rooms':rooms, 'topics':topics, 'count':count}
+    recentActivity = Message.objects.filter(Q(room__name__contains=q)).order_by('-created')
+    context = {'rooms':rooms, 'topics':topics, 'count':count, 'recentActivity':recentActivity}
     return render(request,'base/home.html', context)
 
 def room(request,pk):
     room = Room.objects.get(id=pk)
-    context = {'room':room}
+    roomMessages = room.message_set.order_by('-created')
+    participants = room.participants.all()
+    topics = Topic.objects.all()
+    if request.method == 'POST':
+        message = Message.objects.create(
+            user=request.user,
+            room=room,
+            body=request.POST.get('body')
+        )
+        room.participants.add(request.user)
+        return redirect('room', pk=room.id)
+    context = {'room':room, 'topics':topics, 'roommessages':roomMessages,'participants':participants}
+    
     return render(request,'base/room.html',context)
 
 @login_required(login_url='/login')
@@ -87,6 +114,19 @@ def deleteRoom(request, pk):
         room.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj':room})
+
+
+
+@login_required(login_url='/login')
+def deleteMessage(request, pk):
+    message = Message.objects.get(id=pk)
+    if request.user != message.user:
+        return HttpResponse('You are not Allowed Here')
+    if request.method == 'POST':
+        message.delete()
+        return redirect('home')
+    return render(request, 'base/delete.html', {'obj':message})
+
 
 
 
