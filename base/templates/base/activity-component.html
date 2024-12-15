@@ -6,7 +6,7 @@
 
       {% if request.user == activity.user %}
       {% endif %}
-      <p>@{{activity.user}} - {{activity.created|timesince}}</p>
+      <p><a href="{% url "profile" activity.user.id%}">@{{activity.user}}</a> - {{activity.created|timesince}}</p>
       <small>Replied to - <a href="{% url "room" activity.room.id %}">{{activity.room}}</a></small>
       <a href="{% url "delete-message" activity.id %}">Delete</a>
       <p>{{activity}}</p>

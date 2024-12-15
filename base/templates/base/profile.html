@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<style>
+    .container{
+        display:grid;
+        grid-template-columns:1fr 3fr 1fr;
+        gap:40px;
+    }
+
+</style>
+<h1>User {{user.username}}</h1>
+
+<div class='container'>
+    <section>
+        {% include "base/topics-component.html" %}
+    </section>
+    <section>
+        {% include "base/feed-component.html" %}
+    </section>
+    <section>
+        {% include "base/activity-component.html" %}
+    </section>
+
+</div>
+
+
+
+{% endblock content %}
