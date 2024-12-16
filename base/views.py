@@ -59,16 +59,17 @@ def logOutUser(request):
 def home(request):    
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     rooms= Room.objects.filter(Q(topic__name__icontains = q) | Q(name__icontains=q) | Q(description__icontains=q))
-    topics = Topic.objects.all()
-    count = rooms.count()
+    count = Room.objects.all().count()
+    topics = getTopics()
     recentActivity = Message.objects.filter(Q(room__name__contains=q)).order_by('-created')
-    context = {'rooms':rooms, 'topics':topics, 'count':count, 'recentActivity':recentActivity}
+    context = {'rooms':rooms, 'topics':topics, 'count':count, 'recentActivity':recentActivity,}
     return render(request,'base/home.html', context)
 
 def room(request,pk):
     room = Room.objects.get(id=pk)
     roomMessages = room.message_set.order_by('-created')
     participants = room.participants.all()
+    participantsLength = participants.count()
     topics = Topic.objects.all()
     if request.method == 'POST':
         message = Message.objects.create(
@@ -78,16 +79,17 @@ def room(request,pk):
         )
         room.participants.add(request.user)
         return redirect('room', pk=room.id)
-    context = {'room':room, 'topics':topics, 'roommessages':roomMessages,'participants':participants}
+    context = {'room':room, 'topics':topics, 'roommessages':roomMessages,'participants':participants,'participantsLength':participantsLength}
     
     return render(request,'base/room.html',context)
 
 def userProfile(request,pk):
     user = User.objects.get(id=pk)
     rooms = user.room_set.all()
-    topics = Topic.objects.all()
-    roomMessages = user.message_set.all()
-    context = {'user':user,'rooms':rooms,'topics':topics,'recentActivity':roomMessages}
+    topics = getTopics()
+    roommessages = user.message_set.all()
+    count = Room.objects.all().count()
+    context = {'user':user,'rooms':rooms,'topics':topics,'recentActivity':roommessages,'count':count}
     return render(request, 'base/profile.html', context)
 
 
@@ -139,7 +141,15 @@ def deleteMessage(request, pk):
     return render(request, 'base/delete.html', {'obj':message})
 
 
-
+def getTopics():
+    topicsObj = Topic.objects.all()
+    topics = []
+    for i in topicsObj:
+        count = Room.objects.filter(topic=i).count()
+        newEl = {'topic':i, 'count':count}
+        topics.append(newEl)
+    return topics
+    
 
 def checkUser(request,room):
     if request.user != room.host:

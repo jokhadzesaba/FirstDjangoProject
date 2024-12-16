@@ -1,16 +1,89 @@
 {% extends "main.html" %}
 
 {% block content %}
+<main class="profile-page layout layout--3">
+  <div class="container">
+    <!-- Topics Start -->
+    {% include "base/topics-component.html" %}
+    <!-- Room List Start -->
+    <div class="roomList">
+      <div class="profile">
+        <div class="profile__avatar">
+          <div class="avatar avatar--large active">
+            <img src="https://randomuser.me/api/portraits/men/11.jpg" />
+          </div>
+        </div>
+        <div class="profile__info">
+          <h3>{{user.username}}</h3>
+          <p>@{{user}}</p>
+          <a href="edit-user.html" class="btn btn--main btn--pill">Edit Profile</a>
+        </div>
+        <div class="profile__about">
+          <h3>About</h3>
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur illo tenetur
+            facilis sunt nemo debitis quisquam hic atque aut? Ducimus alias placeat optio
+            accusamus repudiandae quis ab ex exercitationem rem?
+          </p>
+        </div>
+      </div>
 
-<style>
-    .container{
-        display:grid;
-        grid-template-columns:1fr 3fr 1fr;
-        gap:40px;
-    }
+      <div class="roomList__header">
+        <div>
+          <h2>Study Rooms Hosted by dennis_ivy</a>
+          </h2>
+        </div>
+      </div>
+      {% include "base/feed-component.html" %}
+    <!-- Room List End -->
 
-</style>
-<h1>User {{user.username}}</h1>
+    <!-- Activities Start -->
+    <div class="activities">
+      <div class="activities__header">
+        <h2>Recent Activities</h2>
+      </div>
+      {% for activity in recentActivity %}
+      <div class="activities__box">
+        <div class="activities__boxHeader roomListRoom__header">
+          <a href="{% url 'profile' user.id %}" class="roomListRoom__author">
+            <div class="avatar avatar--small">
+              <img src="https://randomuser.me/api/portraits/women/11.jpg" />
+            </div>
+            <p>
+              @{{user.username}}
+              <span>{{activity.created|timesince}} ago</span>
+            </p>
+          </a>
+          <div class="roomListRoom__actions">
+            <a href="{% url "delete-message" activity.id %}">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                <title>delete</title>
+                <path
+                  d="M30 4h-8v-3c0-0.553-0.447-1-1-1h-10c-0.553 0-1 0.447-1 1v3h-8v2h2v24c0 1.104 0.897 2 2 2h20c1.103 0 2-0.896 2-2v-24h2v-2h-0zM12 2h8v2h-8v-2zM26.002 30l-0.002 1v-1h-20v-24h20v24h0.002z">
+                </path>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="activities__boxContent">
+          <p>replied to post “<a href="{% url "room" activity.room.id %}">{{activity.room}}</a>”</p>
+          <div class="activities__boxRoomContent">
+           {{activity.body}}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    <!-- Activities End -->
+  </div>
+</main>
+
+
+
+
+
+{% endblock content %}
+
+{% comment %} <h1>User {{user.username}}</h1>
 
 <div class='container'>
     <section>
@@ -23,8 +96,4 @@
         {% include "base/activity-component.html" %}
     </section>
 
-</div>
-
-
-
-{% endblock content %}
+</div> {% endcomment %}
