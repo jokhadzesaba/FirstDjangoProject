@@ -13,11 +13,13 @@
             <img src="https://randomuser.me/api/portraits/men/11.jpg" />
           </div>
         </div>
+        {% if request.user.id == user.id %}
         <div class="profile__info">
           <h3>{{user.username}}</h3>
           <p>@{{user}}</p>
-          <a href="edit-user.html" class="btn btn--main btn--pill">Edit Profile</a>
+          <a href="{% url "update-user" %}" class="btn btn--main btn--pill">Edit Profile</a>
         </div>
+        {% endif %}
         <div class="profile__about">
           <h3>About</h3>
           <p>
