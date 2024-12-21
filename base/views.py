@@ -1,9 +1,9 @@
 
 from django.shortcuts import render, redirect
-from .models import Room,Topic,Message
-from .forms import RoomForm
+from .models import Room,Topic,Message,User
+from .forms import RoomForm, UserForm
 from django.db.models import Q
-from django.contrib.auth.models import User
+
 from django.contrib import messages
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
@@ -149,10 +149,23 @@ def deleteMessage(request, pk):
 
 @login_required(login_url='/login')
 def updateUser(request):
-    user = User.objects.get(id=request.user.id)
+    user = request.user
+    form = UserForm(instance=user)
+
+    if request.method == 'POST':
+        form = UserForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile', pk=user.id)
+
+    return render(request, 'base/update-user.html', {'form': form})
+
     
-    return render(request, 'base/update-user.html',)
-    
+def topicsPage(request):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    topics = Topic.objects.filter(name__icontains=q)
+    return render(request, 'base/topics.html', {'topics': topics})
+
 
 def getTopics():
     topicsObj = Topic.objects.all()

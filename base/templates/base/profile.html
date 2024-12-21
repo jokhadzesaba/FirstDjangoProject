@@ -10,7 +10,7 @@
       <div class="profile">
         <div class="profile__avatar">
           <div class="avatar avatar--large active">
-            <img src="https://randomuser.me/api/portraits/men/11.jpg" />
+            <img src="{{user.avatar.url}}" />
           </div>
         </div>
         {% if request.user.id == user.id %}
@@ -23,9 +23,7 @@
         <div class="profile__about">
           <h3>About</h3>
           <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur illo tenetur
-            facilis sunt nemo debitis quisquam hic atque aut? Ducimus alias placeat optio
-            accusamus repudiandae quis ab ex exercitationem rem?
+            {{user.bio}}
           </p>
         </div>
       </div>
@@ -49,7 +47,7 @@
         <div class="activities__boxHeader roomListRoom__header">
           <a href="{% url 'profile' user.id %}" class="roomListRoom__author">
             <div class="avatar avatar--small">
-              <img src="https://randomuser.me/api/portraits/women/11.jpg" />
+              <img src="{{activity.user.avatar.url}}" />
             </div>
             <p>
               @{{user.username}}
