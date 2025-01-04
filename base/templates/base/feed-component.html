@@ -1,18 +1,4 @@
-{% comment %} <div>
-  {% for room in rooms %} {% if requset.user == room.host %}
-  <a href="{%url 'update-room' room.id %}">Update</a>
-  <a href="{%url 'delete-room' room.id %}">Delete</a>\ {% endif %}
-  <div>
-    
-    <a href="{% url 'profile' room.host.id %}">@{{room.host.username}}</a>
-    <a href="{% url 'room' room.id %}">
-      <h2>{{room.id}} -- {{room.name}}</h2></a
-    >
-    <small>{{room.topic.name}}</small>
-    <hr>
-    {% endfor %}
-  </div>
-</div> {% endcomment %}
+
 {% for room in rooms %}
 <div class="roomListRoom">
   <div class="roomListRoom__header">

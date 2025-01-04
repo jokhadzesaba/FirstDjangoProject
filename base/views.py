@@ -1,7 +1,7 @@
 
 from django.shortcuts import render, redirect
 from .models import Room,Topic,Message,User
-from .forms import RoomForm, UserForm
+from .forms import MyUserCreationForm, RoomForm, UserForm
 from django.db.models import Q
 
 from django.contrib import messages
@@ -11,20 +11,21 @@ from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 
 
+
 def loginPage(request):
     page = 'login'
     if request.user.is_authenticated:
         return redirect('home')
     
     if request.method == 'POST':
-       username = str(request.POST.get('username')).lower()
+       email = str(request.POST.get('email')).lower()
        password = request.POST.get('password')
        try:
-           user = User.objects.get(username=username)
+           user = User.objects.get(email=email)
            
        except:
            messages.error(request,'No Such an User')
-       user = authenticate(request,username=username, password=password)
+       user = authenticate(request,email=email, password=password)
        if user is not None:
            login(request,user)
            return redirect('home')
@@ -37,18 +38,22 @@ def loginPage(request):
         
         
 def registerPage(request):
-    form = UserCreationForm()
+    form = MyUserCreationForm()
+
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = MyUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.username = str(user.username).lower()
+            user.username = user.username.lower()
             user.save()
-            login(request,user)
+            login(request, user)
             return redirect('home')
         else:
-            messages.error(request, 'Something Went Wrong!')
-    return render(request,'base/login_registrate.html',{'form':form})
+            messages.error(request, 'An error occurred during registration')
+
+    return render(request, 'base/login_registrate.html', {'form': form})
+    
+    
     
 def logOutUser(request):
     logout(request)

@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-na2=@d_=#n3lz3+v%89)htw=to7s5k5*mvmp2h6w-197oq1*oq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+   
+    
+    ]
 
 
 # Application definition
@@ -39,22 +42,35 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'base.apps.BaseConfig',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders'
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # CorsMiddleware first
+    'django.middleware.common.CommonMiddleware',  # CommonMiddleware second
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
 ]
 
+
 ROOT_URLCONF = 'firstDjangoProject.urls'
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:4200',  # Replace with your frontend URL
+    'https://your-production-domain.com'  # Add your production domain here
+    '*'
+]
 
 TEMPLATES = [
     {
@@ -116,7 +132,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-AUTH_USER_MODEL = 'base.user'   
+AUTH_USER_MODEL = 'base.User'   
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
