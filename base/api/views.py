@@ -55,6 +55,7 @@ def get_user_details(request):
 @api_view(['GET'])
 def getRoom(request,pk):
     room = Room.objects.get(id=pk)
+
     serializer = RoomSerializer(room, many=False,context={'request': request})
     return Response(serializer.data)
 

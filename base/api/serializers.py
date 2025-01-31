@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from base.models import Room,Topic,User
+from base.models import Room,Topic,User,Message
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -27,15 +27,22 @@ class TopicSerializer(ModelSerializer):
         model = Topic
         fields = '__all__'
 
+class MessageSerializer(ModelSerializer):
+    user = UserEmailSerializer()  # Include user details in the message
+    
+    class Meta:
+        model = Message
+        fields = ['id', 'user', 'body', 'created', 'update']
+
 
 class RoomSerializer(ModelSerializer):
     host = UserEmailSerializer()
     topic = TopicSerializer()
+    messages = MessageSerializer(source='message_set', many=True)
     class Meta:
         model = Room
         fields = '__all__'
         
-
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
