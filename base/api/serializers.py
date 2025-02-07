@@ -11,16 +11,6 @@ class UserSerializer(ModelSerializer):
             return self.context['request'].build_absolute_uri(obj.avatar.url) 
         return None
     
-    
-class UserEmailSerializer(ModelSerializer):
-    avatar = serializers.SerializerMethodField()
-    class Meta:
-        model = User
-        fields = ['name','email','bio','avatar']  
-    def get_avatar(self, obj):
-        if obj.avatar:
-            return self.context['request'].build_absolute_uri(obj.avatar.url) 
-        return None
 
 class TopicSerializer(ModelSerializer):
     class Meta:
@@ -28,7 +18,7 @@ class TopicSerializer(ModelSerializer):
         fields = '__all__'
 
 class MessageSerializer(ModelSerializer):
-    user = UserEmailSerializer()  # Include user details in the message
+    user = UserSerializer()  # Include user details in the message
     
     class Meta:
         model = Message
@@ -36,13 +26,24 @@ class MessageSerializer(ModelSerializer):
 
 
 class RoomSerializer(ModelSerializer):
-    host = UserEmailSerializer()
+    host = UserSerializer()
     topic = TopicSerializer()
     messages = MessageSerializer(source='message_set', many=True)
     class Meta:
         model = Room
         fields = '__all__'
+class RoomSerializer2(ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id','name']
         
+class ActivitySerializer(ModelSerializer):
+    user = UserSerializer()
+    room = RoomSerializer2()
+    
+    class Meta:
+        model = Message
+        fields = '__all__'
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:

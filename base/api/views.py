@@ -2,11 +2,12 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RoomSerializer,TopicSerializer,TopicWithCountSerializer,UserSerializer,UserRegistrationSerializer
-from base.models import Room,Topic,User
+from .serializers import ActivitySerializer,RoomSerializer,TopicSerializer,TopicWithCountSerializer,UserSerializer,UserRegistrationSerializer,MessageSerializer
+from base.models import Room,Topic,User,Message
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
+from django.db.models import Q
 
 
 
@@ -45,6 +46,38 @@ def login_user(request):
     else:
         return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
+@api_view(['POST'])
+def createRoom(request):
+    topic = request.data.get('topic')
+    name = request.data.get('name')
+    description = request.data.get('description')
+    email = request.data.get("email")
+    user = User.objects.get(email=email)
+    topic, created = Topic.objects.get_or_create(name=topic)
+    Room.objects.create(
+            host=user,
+            topic = topic,
+            name = name,
+            description = description
+            
+        )
+    return JsonResponse({"message": "room created successfully"})
+
+@api_view(['POST'])
+def createMessage(request):
+    message = request.data.get('message')
+    roomId = int(request.data.get('roomId'))
+    room = Room.objects.get(id=roomId) 
+    email = request.data.get('email')
+    user = User.objects.get(email=email)
+    print(message,roomId,email)
+    Message.objects.create(
+            user=user,
+            room=room,
+            body=message,
+        )
+    return JsonResponse({"message": "message created successfully"})
+
 @api_view(['GET'])
 def get_user_details(request):
     user = request.user 
@@ -55,10 +88,10 @@ def get_user_details(request):
 @api_view(['GET'])
 def getRoom(request,pk):
     room = Room.objects.get(id=pk)
-
     serializer = RoomSerializer(room, many=False,context={'request': request})
     return Response(serializer.data)
-
+    
+    
 @api_view(['GET'])
 def getTopics(request):
     topics = Topic.objects.all()
@@ -74,10 +107,22 @@ def searchByTopic(request,topicName):
 
 
 @api_view(['GET'])
-def roomByTopic(request,topicName):
-    topic = Topic.objects.get(name=topicName)  
-    rooms = Room.objects.filter(topic=topic)  
-    serializer = RoomSerializer(rooms, many=True)
+def roomByTopic(request,topicName):  
+    if (topicName == 'All'):
+      rooms = Room.objects.all()
+    else:   
+      topic = Topic.objects.get(name=topicName) 
+      rooms = Room.objects.filter(topic=topic)  
+    serializer = RoomSerializer(rooms, many=True,context={'request': request})
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def searchRooms(request, searchParam):
+    if(searchParam):
+        rooms= Room.objects.filter(Q(topic__name__icontains = searchParam) | Q(name__icontains=searchParam) | Q(description__icontains=searchParam))
+    else:
+        rooms = Room.objects.all()
+    serializer = RoomSerializer(rooms, many=True,context={'request': request})
     return Response(serializer.data)
     
 @api_view(['GET'])
@@ -93,6 +138,15 @@ def getTopicsCount(request):
     serializer = TopicWithCountSerializer(topics, many=True)
     return Response(serializer.data)
 
+
+@api_view(['GET'])
+def getActivity(request,searchWord):
+    if(searchWord == 'All' or searchWord == ''):
+        activity = Message.objects.all()     
+    else:
+        activity = Message.objects.filter(Q(room__name__icontains=searchWord) | Q(room__description__icontains=searchWord) |Q(room__topic__name__contains=searchWord))
+    serializer = ActivitySerializer(activity,many=True,context={'request': request})
+    return Response(serializer.data)
 
 
 class UserRegistrationView(APIView):
