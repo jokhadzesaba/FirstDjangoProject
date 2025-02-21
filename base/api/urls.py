@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import UserRegistrationView
+from .views import UserRegistrationView,CreateRoomView
 
 urlpatterns = [
     path('', views.getRoutes),
@@ -13,7 +13,7 @@ urlpatterns = [
     path('topics/<str:topicName>', views.searchByTopic),
     path('register', UserRegistrationView.as_view()),
     path('login', views.login_user),
-    path('create-room', views.createRoom),
+    path('create-room', CreateRoomView.as_view()),
     path('create-message', views.createMessage),
     path('activity/<str:searchWord>', views.getActivity),
     

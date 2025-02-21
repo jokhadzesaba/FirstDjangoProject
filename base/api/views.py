@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 from django.db.models import Q
-
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 
@@ -40,7 +40,6 @@ def login_user(request):
     user = authenticate(request, email=email, password=password)
     if user is not None:
         token, _ = Token.objects.get_or_create(user=user)
-        
         user_data = UserSerializer(user,context={'request': request})
         return JsonResponse({'token': token.key, 'user':user_data.data})
     else:
@@ -52,13 +51,15 @@ def createRoom(request):
     name = request.data.get('name')
     description = request.data.get('description')
     email = request.data.get("email")
+    photo = request.data.get("roomPhoto")
     user = User.objects.get(email=email)
     topic, created = Topic.objects.get_or_create(name=topic)
     Room.objects.create(
             host=user,
             topic = topic,
             name = name,
-            description = description
+            description = description,
+            roomPhoto= photo
             
         )
     return JsonResponse({"message": "room created successfully"})
@@ -157,3 +158,23 @@ class UserRegistrationView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class CreateRoomView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    def post(self, request):
+        topic = request.data.get('roomTopic')
+        name = request.data.get('roomName')
+        description = request.data.get('roomDescription')
+        email = request.data.get('email')
+        roomPhoto = request.FILES.get('roomPhoto')  # Get file
+
+        user = User.objects.get(email=email)
+        topic, created = Topic.objects.get_or_create(name=topic)
+        room = Room.objects.create(
+            host=user,
+            topic=topic,
+            name=name,
+            description=description,
+            roomPhoto=roomPhoto
+        )
+        return Response({"message": "Room created successfully"}, status=status.HTTP_201_CREATED)
