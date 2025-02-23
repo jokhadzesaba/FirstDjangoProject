@@ -3,9 +3,10 @@ from rest_framework import serializers
 from base.models import Room,Topic,User,Message
 
 class UserSerializer(ModelSerializer):
+    id = User.id
     class Meta:
         model = User
-        fields = ['name','email','bio','avatar']
+        fields = ['name','email','bio','avatar','id']
     def get_avatar(self, obj):
         if obj.avatar:
             return self.context['request'].build_absolute_uri(obj.avatar.url) 

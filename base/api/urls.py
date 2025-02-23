@@ -5,6 +5,8 @@ from .views import UserRegistrationView,CreateRoomView
 urlpatterns = [
     path('', views.getRoutes),
     path('rooms', views.getRooms),
+    path('userById/<str:id>',views.getUserById),
+    path('selectedUserFeed/<str:userId>',views.getSelectedUserFeed),
     path('room/<str:pk>', views.getRoom),
     path('topic/<str:topicName>', views.roomByTopic),
     path('search/<str:searchParam>', views.searchRooms),

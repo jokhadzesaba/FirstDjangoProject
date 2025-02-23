@@ -28,6 +28,22 @@ def getRoutes(request):
     return Response(routes)
 
 @api_view(['GET'])
+def getUserById(request,id):
+    user = User.objects.get(id=id)
+    serializer = UserSerializer(user, many=False,context={'request': request})
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def getSelectedUserFeed(request,userId):
+    user = User.objects.get(id=userId)
+    rooms = Room.objects.filter(host=user)
+    serializer = RoomSerializer(rooms, many=True,context={'request': request})
+    return Response(serializer.data)
+
+
+
+@api_view(['GET'])
 def getRooms(request):
     rooms = Room.objects.all()
     serializer = RoomSerializer(rooms, many=True,context={'request': request})
