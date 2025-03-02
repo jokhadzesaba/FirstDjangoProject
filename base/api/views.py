@@ -80,6 +80,17 @@ def createRoom(request):
         )
     return JsonResponse({"message": "room created successfully"})
 
+@api_view(['DELETE'])
+def deleteRoom(request,id):
+    try:
+        room = Room.objects.get(id=id)
+        room.delete()
+        return JsonResponse({'message': f'Room {id} was deleted successfully'}, status=200)
+    except Room.DoesNotExist:
+        return JsonResponse({'error': f'Room {id} does not exist'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 @api_view(['POST'])
 def createMessage(request):
     message = request.data.get('message')
@@ -158,10 +169,10 @@ def getTopicsCount(request):
 
 @api_view(['GET'])
 def getActivity(request,searchWord):
-    if(searchWord == 'All' or searchWord == ''):
-        activity = Message.objects.all()     
+    if(searchWord == 'All'):
+        activity = Message.objects.all().order_by('-created')     
     else:
-        activity = Message.objects.filter(Q(room__name__icontains=searchWord) | Q(room__description__icontains=searchWord) |Q(room__topic__name__contains=searchWord))
+        activity = Message.objects.filter(Q(room__name__icontains=searchWord) | Q(room__description__icontains=searchWord) |Q(room__topic__name__contains=searchWord)).order_by('-created')
     serializer = ActivitySerializer(activity,many=True,context={'request': request})
     return Response(serializer.data)
 
