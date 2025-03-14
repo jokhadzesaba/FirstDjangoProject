@@ -9,7 +9,9 @@ from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 from django.db.models import Q
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 
 @api_view(['GET'])
@@ -33,19 +35,18 @@ def getUserById(request,id):
     serializer = UserSerializer(user, many=False,context={'request': request})
     return Response(serializer.data)
 
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    user = request.user
+    user_data = UserSerializer(user, context={'request': request})
+    return Response({'user':user_data.data})
 
 @api_view(['GET'])
 def getSelectedUserFeed(request,userId):
     user = User.objects.get(id=userId)
     rooms = Room.objects.filter(host=user)
-    serializer = RoomSerializer(rooms, many=True,context={'request': request})
-    return Response(serializer.data)
-
-
-
-@api_view(['GET'])
-def getRooms(request):
-    rooms = Room.objects.all()
     serializer = RoomSerializer(rooms, many=True,context={'request': request})
     return Response(serializer.data)
 
@@ -60,6 +61,14 @@ def login_user(request):
         return JsonResponse({'token': token.key, 'user':user_data.data})
     else:
         return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
+@api_view(['GET'])
+def getRooms(request):
+    rooms = Room.objects.all()
+    serializer = RoomSerializer(rooms, many=True,context={'request': request})
+    return Response(serializer.data)
+
+
 
 @api_view(['POST'])
 def createRoom(request):
@@ -79,7 +88,32 @@ def createRoom(request):
             
         )
     return JsonResponse({"message": "room created successfully"})
+@api_view(['POST'])
+def updateProfile(request):
+    name = request.data.get('name')
+    email = request.data.get('email')
+    bio = request.data.get('bio')
+    avatar = request.data.get('avatar')
+    user = request.user
+    print(name,email,bio,avatar)
+    if not user.is_authenticated:
+        return Response({'error': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
+    try:
+        # Update the User model fields
+        if name:
+            user.first_name = name  # Assuming 'name' maps to 'first_name' in User model
+        if email:
+            user.email = email
+        if bio:
+            user.bio = bio
+        if avatar:
+            user.avatar = avatar
+        user.save()
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 @api_view(['DELETE'])
 def deleteRoom(request,id):
     try:

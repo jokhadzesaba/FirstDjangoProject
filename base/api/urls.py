@@ -17,8 +17,11 @@ urlpatterns = [
     path('topics/<str:topicName>', views.searchByTopic),
     path('register', UserRegistrationView.as_view()),
     path('login', views.login_user),
+    path('update-profile', views.updateProfile),
     path('create-message', views.createMessage),
     path('activity/<str:searchWord>', views.getActivity),
+    path('getCurrentUser', views.get_current_user),
+    
     
 
 
