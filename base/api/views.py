@@ -95,14 +95,13 @@ def updateProfile(request):
     bio = request.data.get('bio')
     avatar = request.data.get('avatar')
     user = request.user
-    print(name,email,bio,avatar)
     if not user.is_authenticated:
         return Response({'error': 'User is not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
         # Update the User model fields
         if name:
-            user.first_name = name  # Assuming 'name' maps to 'first_name' in User model
+            user.name = name  # Assuming 'name' maps to 'first_name' in User model
         if email:
             user.email = email
         if bio:
@@ -110,6 +109,7 @@ def updateProfile(request):
         if avatar:
             user.avatar = avatar
         user.save()
+        print(user.avatar)
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
